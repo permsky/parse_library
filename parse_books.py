@@ -17,7 +17,7 @@ def check_for_redirect(response: requests.models.Response) -> None:
             )
 
 
-def parse_books(books_count: int) -> None:
+def download_books(books_count: int) -> None:
     '''Download books from tululu.org.'''
     os.makedirs('books', exist_ok=True)
 
@@ -35,4 +35,4 @@ def parse_books(books_count: int) -> None:
 
 
 if __name__ == '__main__':
-    parse_books(10)
+    download_books(10)
