@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, sanitize_filepath
 from urllib.error import HTTPError
-from urllib.parse import unquote, urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit
 
 
 def check_for_redirect(response: requests.models.Response) -> None:
@@ -72,6 +72,20 @@ def download_image(id: int) -> None:
         file.write(response.content)
 
 
+def download_comments(id: int) -> list[str]:
+    '''Download comments for book.'''
+    url = f'https://tululu.org/b{id}/'
+    response = requests.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'lxml')
+    comments_section = soup.find_all('div', class_='texts')
+    comments = list()
+    if comments_section:
+        for comment in comments_section:
+            comments.append(comment.find('span', class_='black').text)
+    return comments
+
+
 def download_books(books_count: int) -> None:
     '''Download books from tululu.org.'''
     for id in range(1, books_count + 1):
@@ -89,6 +103,10 @@ def download_books(books_count: int) -> None:
             filename=filename
         )
         download_image(id)
+        comments = download_comments(id)
+        if comments:
+            for comment in comments:
+                print(f'\n{comment}')
 
 
 if __name__ == '__main__':
