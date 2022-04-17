@@ -97,7 +97,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description='''
             Скачивание книг из онлайн-библиотеки по id книги, начиная
-            с start_id и заканчивая end_id.
+            с start_id (по умолчанию 1) и заканчивая end_id (по умолчанию 10).
         '''
     )
     parser.add_argument('-s', '--start_id', help='Начальный id', default=1)
