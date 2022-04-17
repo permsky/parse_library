@@ -86,6 +86,19 @@ def download_comments(id: int) -> list[str]:
     return comments
 
 
+def parse_book_genres(id: int) -> list[str]:
+    '''Parse book genres.'''
+    url = f'https://tululu.org/b{id}/'
+    response = requests.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'lxml')
+    genres_links = soup.find('span', class_='d_book').find_all('a')
+    genres = list()
+    for genre_link in genres_links:
+        genres.append(genre_link.text)
+    return genres
+
+
 def download_books(books_count: int) -> None:
     '''Download books from tululu.org.'''
     for id in range(1, books_count + 1):
@@ -107,6 +120,10 @@ def download_books(books_count: int) -> None:
         if comments:
             for comment in comments:
                 print(f'\n{comment}')
+        genres = parse_book_genres(id)
+        for genre in genres:
+            print(f'\n{genre}')
+
 
 
 if __name__ == '__main__':
