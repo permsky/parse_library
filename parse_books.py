@@ -3,7 +3,9 @@ import requests
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, sanitize_filepath
+from typing import Union
 from urllib.error import HTTPError
+from urllib.parse import urljoin
 
 
 def check_for_redirect(response: requests.models.Response) -> None:
@@ -45,6 +47,18 @@ def download_txt(
     with open(filepath, 'w') as file:
         file.write(response.text)
     return filepath
+
+
+def get_img_url(id: int) -> str:
+    '''Get book cover image url.'''
+    url = f'https://tululu.org/b{id}/'
+    response = requests.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'lxml')
+    img = soup.find('div', class_='bookimage').find('a').find('img')['src']
+    if img:
+        return urljoin('https://tululu.org', img)
+    return 'https://tululu.org/images/nopic.gif'
 
 
 def download_books(books_count: int) -> None:
