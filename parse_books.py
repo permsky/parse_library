@@ -1,3 +1,4 @@
+import argparse
 import os
 import requests
 
@@ -91,9 +92,19 @@ def parse_book_page(soup: BeautifulSoup) -> dict:
     return book
 
 
-def main(books_count: int) -> None:
+def main() -> None:
     '''Download books from tululu.org.'''
-    for id in range(1, books_count + 1):
+    parser = argparse.ArgumentParser(
+        description='''
+            Скачивание книг из онлайн-библиотеки по id книги, начиная
+            с start_id и заканчивая end_id.
+        '''
+    )
+    parser.add_argument('-s', '--start_id', help='Начальный id', default=1)
+    parser.add_argument('-e', '--end_id', help='Финальный id', default=10)
+    args = parser.parse_args()
+
+    for id in range(int(args.start_id), int(args.end_id) + 1):
         url = f'https://tululu.org/txt.php?id={id}'
         txt_response = requests.get(url)
         txt_response.raise_for_status()
@@ -120,4 +131,4 @@ def main(books_count: int) -> None:
 
 
 if __name__ == '__main__':
-    main(10)
+    main()
