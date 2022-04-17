@@ -2,6 +2,7 @@ import os
 import requests
 
 from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename, sanitize_filepath
 from urllib.error import HTTPError
 
 
@@ -29,10 +30,25 @@ def parse_book(id: int) -> tuple[str, str]:
     return title[0].strip(), title[1].strip()
 
 
+def download_txt(
+    url: str,
+    filename: str,
+    folder: str='books/'
+) -> str:
+    '''Download txt-file and return filepath.'''
+    filename = sanitize_filename(filename)
+    folder = sanitize_filepath(folder)
+    os.makedirs(folder, exist_ok=True)
+    filepath = os.path.join(folder, filename)
+    response = requests.get(url)
+    response.raise_for_status()
+    with open(filepath, 'w') as file:
+        file.write(response.text)
+    return filepath
+
+
 def download_books(books_count: int) -> None:
     '''Download books from tululu.org.'''
-    os.makedirs('books', exist_ok=True)
-
     for id in range(1, books_count + 1):
         url = f'https://tululu.org/txt.php?id={id}'
         response = requests.get(url)
@@ -42,9 +58,11 @@ def download_books(books_count: int) -> None:
         except HTTPError:
             continue
         book = parse_book(id)
-        filename = f'books/{book[1]} - {book[0]}.txt'
-        with open(filename, 'w') as file:
-            file.write(response.text)
+        filename = f'{book[1]} - {book[0]}.txt'
+        download_txt(
+            url=url,
+            filename=filename
+        )
 
 
 if __name__ == '__main__':
