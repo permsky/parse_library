@@ -3,9 +3,8 @@ import requests
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, sanitize_filepath
-from typing import Union
 from urllib.error import HTTPError
-from urllib.parse import urljoin
+from urllib.parse import unquote, urljoin, urlsplit
 
 
 def check_for_redirect(response: requests.models.Response) -> None:
@@ -61,6 +60,18 @@ def get_img_url(id: int) -> str:
     return 'https://tululu.org/images/nopic.gif'
 
 
+def download_image(id: int) -> None:
+    '''Download book cover images.'''
+    url = get_img_url(id)
+    response = requests.get(url)
+    response.raise_for_status()
+    os.makedirs('images', exist_ok=True)
+    filename = urlsplit(url)[-3].split('/')[-1]
+    filepath = os.path.join('images', filename)
+    with open(filepath, 'wb') as file:
+        file.write(response.content)
+
+
 def download_books(books_count: int) -> None:
     '''Download books from tululu.org.'''
     for id in range(1, books_count + 1):
@@ -77,6 +88,7 @@ def download_books(books_count: int) -> None:
             url=url,
             filename=filename
         )
+        download_image(id)
 
 
 if __name__ == '__main__':
