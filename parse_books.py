@@ -115,7 +115,7 @@ def main() -> None:
         response = requests.get(f'https://tululu.org/b{id}/')
         response.raise_for_status()
         book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
-        filename = f'{book["author"]} - {book["title"]}.txt'
+        filename = f'{id}. {book["author"]} - {book["title"]}.txt'
         print(filename)
         download_txt(
             response=txt_response,
