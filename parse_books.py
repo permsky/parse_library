@@ -4,21 +4,13 @@ import requests
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, sanitize_filepath
-from urllib.error import HTTPError
 from urllib.parse import urljoin, urlsplit
 
 
 def check_for_redirect(response: requests.models.Response) -> None:
     '''Check exist book or not.'''
     if response.history:
-        if response.history[0].status_code == 302:
-            raise HTTPError(
-                url=response.url,
-                code=302,
-                msg='Книга не найдена',
-                hdrs='',
-                fp=None
-            )
+        raise requests.exceptions.HTTPError
 
 
 def parse_book_title_and_author(soup: BeautifulSoup) -> tuple[str, str]:
@@ -120,7 +112,7 @@ def main() -> None:
         txt_response.raise_for_status()
         try:
             check_for_redirect(txt_response)
-        except HTTPError:
+        except requests.exceptions.HTTPError:
             continue
         response = requests.get(f'https://tululu.org/b{book_id}/')
         response.raise_for_status()
@@ -135,9 +127,8 @@ def main() -> None:
         for genre in book['genres']:
             print(f'\n{genre}')
         comments = book['comments']
-        if comments:
-            for comment in comments:
-                print(f'\n{comment}')
+        for comment in comments:
+            print(f'\n{comment}')
 
 
 if __name__ == '__main__':
