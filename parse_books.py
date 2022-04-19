@@ -64,20 +64,15 @@ def download_image(url: str) -> None:
 def parse_comments(soup: BeautifulSoup) -> list[str]:
     '''Parse comments for book.'''
     comments_section = soup.find_all('div', class_='texts')
-    comments = list()
-    if comments_section:
-        for comment in comments_section:
-            comments.append(comment.find('span', class_='black').text)
+    comments = [comment.find('span', class_='black').text for comment \
+        in comments_section]
     return comments
 
 
 def parse_book_genres(soup: BeautifulSoup) -> list[str]:
     '''Parse book genres.'''
     genres_links = soup.find('span', class_='d_book').find_all('a')
-    genres = list()
-    for genre_link in genres_links:
-        genres.append(genre_link.text)
-    return genres
+    return [genre_link.text for genre_link in genres_links]
 
 
 def parse_book_page(soup: BeautifulSoup) -> dict:
