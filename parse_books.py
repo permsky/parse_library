@@ -127,7 +127,7 @@ def main() -> None:
         book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
         filename = f'{book_id}. {book["author"]} - {book["title"]}.txt'
         print(filename)
-        download_txt(
+        save_txt(
             response=txt_response,
             filename=filename
         )
