@@ -104,8 +104,8 @@ def main() -> None:
     parser.add_argument('-e', '--end_id', help='Финальный id', default=10)
     args = parser.parse_args()
 
-    for id in range(int(args.start_id), int(args.end_id) + 1):
-        url = f'https://tululu.org/txt.php?id={id}'
+    for book_id in range(int(args.start_id), int(args.end_id) + 1):
+        url = f'https://tululu.org/txt.php?id={book_id}'
         txt_response = requests.get(url)
         txt_response.raise_for_status()
         try:
@@ -115,7 +115,7 @@ def main() -> None:
         response = requests.get(f'https://tululu.org/b{id}/')
         response.raise_for_status()
         book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
-        filename = f'{id}. {book["author"]} - {book["title"]}.txt'
+        filename = f'{book_id}. {book["author"]} - {book["title"]}.txt'
         print(filename)
         download_txt(
             response=txt_response,
