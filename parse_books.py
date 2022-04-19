@@ -27,12 +27,12 @@ def parse_book_title_and_author(soup: BeautifulSoup) -> tuple[str, str]:
     return title[0].strip(), title[1].strip()
 
 
-def download_txt(
+def save_txt(
     response: requests.models.Response,
     filename: str,
     folder: str='books/'
 ) -> str:
-    '''Download txt-file and return filepath.'''
+    '''Save txt-file and return filepath.'''
     filename = sanitize_filename(filename)
     folder = sanitize_filepath(folder)
     os.makedirs(folder, exist_ok=True)
