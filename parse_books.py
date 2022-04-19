@@ -100,11 +100,23 @@ def main() -> None:
             с start_id (по умолчанию 1) и заканчивая end_id (по умолчанию 10).
         '''
     )
-    parser.add_argument('-s', '--start_id', help='Начальный id', default=1)
-    parser.add_argument('-e', '--end_id', help='Финальный id', default=10)
+    parser.add_argument(
+        '-s',
+        '--start_id',
+        type=int,
+        help='Начальный id',
+        default=1
+    )
+    parser.add_argument(
+        '-e',
+        '--end_id',
+        type=int,
+        help='Финальный id',
+        default=10
+    )
     args = parser.parse_args()
 
-    for book_id in range(int(args.start_id), int(args.end_id) + 1):
+    for book_id in range(args.start_id, args.end_id + 1):
         url = f'https://tululu.org/txt.php?id={book_id}'
         txt_response = requests.get(url)
         txt_response.raise_for_status()
