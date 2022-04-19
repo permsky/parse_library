@@ -1,8 +1,10 @@
 import argparse
 import os
 import requests
+import sys
 
 from bs4 import BeautifulSoup
+from loguru import logger
 from pathvalidate import sanitize_filename, sanitize_filepath
 from urllib.parse import urljoin, urlsplit
 
@@ -10,7 +12,7 @@ from urllib.parse import urljoin, urlsplit
 def check_for_redirect(response: requests.models.Response) -> None:
     '''Check exist book or not.'''
     if response.history:
-        raise requests.exceptions.HTTPError
+        raise requests.HTTPError('\nОшибка при запросе текста книги')
 
 
 def parse_book_title_and_author(soup: BeautifulSoup) -> tuple[str, str]:
@@ -79,8 +81,11 @@ def parse_book_page(soup: BeautifulSoup) -> dict:
     return book
 
 
+@logger.catch
 def main() -> None:
     '''Download books from tululu.org.'''
+    logger.add(sys.stderr, level='ERROR')
+
     parser = argparse.ArgumentParser(
         description='''
             Скачивание книг из онлайн-библиотеки по id книги, начиная
@@ -109,21 +114,22 @@ def main() -> None:
             'https://tululu.org/txt.php',
             params=get_params
         )
-        txt_response.raise_for_status()
         try:
+            txt_response.raise_for_status()
             check_for_redirect(txt_response)
-        except requests.exceptions.HTTPError:
+            response = requests.get(f'https://tululu.org/b{book_id}/')
+            response.raise_for_status()
+            book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
+            download_image(book['img_url'])
+        except requests.HTTPError as err:
+            logger.error(err)
             continue
-        response = requests.get(f'https://tululu.org/b{book_id}/')
-        response.raise_for_status()
-        book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
         filename = f'{book_id}. {book["author"]} - {book["title"]}.txt'
         print(filename)
         save_txt(
             response=txt_response,
             filename=filename
         )
-        download_image(book['img_url'])
         for genre in book['genres']:
             print(f'\n{genre}')
         comments = book['comments']
