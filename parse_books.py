@@ -117,14 +117,17 @@ def main() -> None:
     args = parser.parse_args()
 
     for book_id in range(args.start_id, args.end_id + 1):
-        url = f'https://tululu.org/txt.php?id={book_id}'
-        txt_response = requests.get(url)
+        get_params = {'id': book_id}
+        txt_response = requests.get(
+            'https://tululu.org/txt.php',
+            params=get_params
+        )
         txt_response.raise_for_status()
         try:
             check_for_redirect(txt_response)
         except HTTPError:
             continue
-        response = requests.get(f'https://tululu.org/b{id}/')
+        response = requests.get(f'https://tululu.org/b{book_id}/')
         response.raise_for_status()
         book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
         filename = f'{book_id}. {book["author"]} - {book["title"]}.txt'
