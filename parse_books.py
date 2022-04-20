@@ -71,14 +71,14 @@ def parse_book_genres(soup: BeautifulSoup) -> list[str]:
 
 def parse_book_page(soup: BeautifulSoup) -> dict:
     '''Parse book page.'''
-    book = dict()
     title, author = parse_book_title_and_author(soup)
-    book['title'] = title
-    book['author'] = author
-    book['img_url'] = parse_img_url(soup)
-    book['genres'] = parse_book_genres(soup)
-    book['comments'] = parse_comments(soup)
-    return book
+    return {
+        'title': title,
+        'author': author,
+        'img_url': parse_img_url(soup),
+        'genres': parse_book_genres(soup),
+        'comments': parse_comments(soup)
+    }
 
 
 @logger.catch
