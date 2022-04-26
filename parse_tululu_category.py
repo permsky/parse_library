@@ -16,15 +16,15 @@ def check_for_redirect(response: requests.models.Response) -> None:
 
 def parse_book_title_and_author(soup: BeautifulSoup) -> tuple[str, str]:
     '''Parse book title and author.'''
-    title = soup.find('h1').text.split('::')
+    title = soup.select_one('h1').text.split('::')
     return title[0].strip(), title[1].strip()
 
 
 def parse_book_links(soup: BeautifulSoup) -> list[str]:
     '''Parse book links.'''
-    tables = soup.find_all('table', class_='d_book')
-    links = [table.find('a', href=True) for table in tables]
-    return [urljoin('https://tululu.org', link['href']) for link in links]
+    tables = soup.select('.d_book')
+    links = [table.select_one('a[href]')['href'] for table in tables]
+    return [urljoin('https://tululu.org', link) for link in links]
 
 
 def dump_to_json(book: dict) -> None:
@@ -50,7 +50,7 @@ def save_txt(
 
 def parse_img_url(soup: BeautifulSoup) -> str:
     '''Get book cover image url.'''
-    img = soup.find('div', class_='bookimage').find('a').find('img')['src']
+    img = soup.select_one('.bookimage a img')['src']
     if img:
         return urljoin('https://tululu.org', img)
     return 'https://tululu.org/images/nopic.gif'
@@ -69,15 +69,15 @@ def download_image(url: str) -> None:
 
 def parse_comments(soup: BeautifulSoup) -> list[str]:
     '''Parse comments for book.'''
-    comments_section = soup.find_all('div', class_='texts')
-    comments = [comment.find('span', class_='black').text for comment \
+    comments_section = soup.select('.texts')
+    comments = [comment.select_one('.black').text for comment \
         in comments_section]
     return comments
 
 
 def parse_book_genres(soup: BeautifulSoup) -> list[str]:
     '''Parse book genres.'''
-    genres_links = soup.find('span', class_='d_book').find_all('a')
+    genres_links = soup.select_one('span.d_book').select('a')
     return [genre_link.text for genre_link in genres_links]
 
 
