@@ -1,6 +1,8 @@
+import argparse
 import json
 import os
 import requests
+import sys
 
 from bs4 import BeautifulSoup
 from loguru import logger
@@ -93,10 +95,56 @@ def parse_book_page(soup: BeautifulSoup) -> dict:
     }
 
 
+def parse_last_page_number(soup:BeautifulSoup) -> str:
+    '''Parse last page number of list of books.'''
+    pages = soup.select('.center a')
+    return [page.text for page in pages][-1]
+
+
+@logger.catch
 def main() -> None:
-    '''.'''
+    '''Download books from tululu.org.'''
+    logger.add(sys.stderr, level='ERROR')
+
+    parser = argparse.ArgumentParser(
+        description='''
+            Скачивание научной фантастики из онлайн-библиотеки по номеру
+            страницы сайта, начиная с start_page (по умолчанию 1)
+            и заканчивая end_page-1 (по умолчанию 10).
+        '''
+    )
+    parser.add_argument(
+        '-s',
+        '--start_page',
+        type=int,
+        help='Стартовая страница',
+    )
+    parser.add_argument(
+        '-e',
+        '--end_page',
+        type=int,
+        help='Последняя страница',
+    )
+    args = parser.parse_args()
+
+    start_page = 1
+    end_page = 11
+    if args.start_page:
+        response = requests.get(f'https://tululu.org/l55')
+        response.raise_for_status()
+        end_page = 1 + int(
+            parse_last_page_number(
+                BeautifulSoup(response.text, 'lxml')
+            )
+        )
+        start_page = int(args.start_page)
+        if args.end_page:
+            if start_page >= end_page - 1:
+                print('start_page не может быть больше или равно end_page')
+                sys.exit()
+            end_page = int(args.end_page)
     books = list()
-    for page in range(1, 2):
+    for page in range(start_page, end_page):
         response = requests.get(f'https://tululu.org/l55/{page}')
         response.raise_for_status()
         links = parse_book_links(BeautifulSoup(response.text, 'lxml'))
