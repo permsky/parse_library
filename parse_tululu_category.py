@@ -153,7 +153,7 @@ def get_args() -> argparse.Namespace:
         '-df',
         '--dest_folder',
         action='store_true',
-        help='Пути к книгам, обложкам и json-файлу',
+        help='Отображает пути к книгам, обложкам и json-файлу',
     )
     parser.add_argument(
         '-si',
@@ -171,7 +171,7 @@ def get_args() -> argparse.Namespace:
         '-jp',
         '--json_path',
         type=str,
-        help='Последняя страница',
+        help='Путь сохранения json-файла',
     )
     return parser.parse_args()
 
