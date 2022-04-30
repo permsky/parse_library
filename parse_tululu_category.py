@@ -29,10 +29,18 @@ def parse_book_links(soup: BeautifulSoup) -> list[str]:
     return [urljoin('https://tululu.org', link) for link in links]
 
 
-def dump_to_json(book: dict) -> None:
-    '''Write information about book in json-file.'''
+def get_downloaded_books() -> list:
+    '''Load information about already downloaded books from json-file.'''
+    if os.path.isfile('books.json'):
+        with open('books.json', 'r', encoding='utf-8') as books_file:
+            return json.load(books_file)
+    return list()
+
+
+def dump_to_json(books: dict) -> None:
+    '''Write information about books in json-file.'''
     with open('books.json', 'w', encoding='utf-8') as books_file:
-        json.dump(book, books_file, indent=4, ensure_ascii=False)
+        json.dump(books, books_file, indent=4, ensure_ascii=False)
 
 
 def save_txt(
@@ -101,6 +109,17 @@ def parse_last_page_number(soup:BeautifulSoup) -> str:
     return [page.text for page in pages][-1]
 
 
+def check_book(books: dict, filename: str) -> bool:
+    '''Check is downloaded book "filename" or not.'''
+    is_downloaded = False
+    if books:
+        for book in books:
+            if filename in book['book_path']:
+                is_downloaded = True
+                break
+    return is_downloaded
+
+
 @logger.catch
 def main() -> None:
     '''Download books from tululu.org.'''
@@ -143,7 +162,7 @@ def main() -> None:
                 print('start_page не может быть больше или равно end_page')
                 sys.exit()
             end_page = int(args.end_page)
-    books = list()
+    downloaded_books = get_downloaded_books()
     for page in range(start_page, end_page):
         response = requests.get(f'https://tululu.org/l55/{page}')
         response.raise_for_status()
@@ -161,18 +180,19 @@ def main() -> None:
                 response = requests.get(link)
                 response.raise_for_status()
                 book = parse_book_page(BeautifulSoup(response.text, 'lxml'))
+                filename = f'{book_id}. {book["author"]} - {book["title"]}.txt'
                 download_image(book['img_url'])
             except requests.HTTPError as err:
                 logger.error(err)
                 continue
-            filename = f'{book_id}. {book["author"]} - {book["title"]}.txt'
-            save_txt(
-                response=txt_response,
-                filename=filename
-            )
-            book['book_path'] = os.path.join('books', filename)
-            books.append(book)
-        dump_to_json(books)
+            if not check_book(downloaded_books, filename):
+                save_txt(
+                    response=txt_response,
+                    filename=filename
+                )
+                book['book_path'] = os.path.join('books', filename)
+                downloaded_books.append(book)
+        dump_to_json(downloaded_books)
 
 
 if __name__ == '__main__':
